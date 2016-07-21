@@ -623,11 +623,15 @@ class Mechanize::HTTP::Agent
         Mechanize::Util.uri_escape(match)
       }
 
-      escaped_url = Mechanize::Util.html_unescape(
-        url.split(/((?:%[0-9A-Fa-f]{2})+|#)/).each_slice(2).map { |x, y|
-          "#{WEBrick::HTTPUtils.escape(x)}#{y}"
-        }.join('')
-      )
+      escaped_url = if url[/(?<=\[).+?(?=\])/] =~ Resolv::IPv6::Regex
+                      url
+                    else
+                      Mechanize::Util.html_unescape(
+                        url.split(/((?:%[0-9A-Fa-f]{2})+|#)/).each_slice(2).map { |x, y|
+                          "#{WEBrick::HTTPUtils.escape(x)}#{y}"
+                        }.join('')
+                      )
+                    end
 
       begin
         uri = URI.parse(escaped_url)
